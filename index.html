@@ -3,20 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Web Terminal</title>
+    <title>Frontend Python Editor</title>
+    <!-- Load Monaco Editor Styles -->
+    <link rel="stylesheet" data-name="vs/css" href="https://cloudflare.com">
+    <!-- Load Custom CSS Stylesheet -->
     <link rel="stylesheet" href="style.css">
+    <!-- Load Pyodide WebAssembly Python Runtime -->
+    <script src="https://jsdelivr.net"></script>
 </head>
 <body>
-    <!-- Main terminal window shell -->
-    <div class="terminal-container" onclick="focusInput()">
-        <div class="terminal-history" id="history">
-            <div>Welcome to WebTerminal v1.0. Type 'help' or valid JS code.</div>
-        </div>
-        <div class="input-line">
-            <span class="prompt">js-user:$</span>
-            <input type="text" id="terminal-input" autofocus autocomplete="off" stroke="none">
-        </div>
-    </div>
+    <h2>Frontend-Only Python Editor</h2>
+    <div id="status">Loading Python runtime environment...</div>
+    <div id="editor"></div>
+    <button id="run-btn" disabled>Run Code</button>
+    
+    <h3>Console Output</h3>
+    <div id="output"></div>
+
+    <!-- Load Monaco Editor Loader -->
+    <script src="https://cloudflare.com"></script>
+    <!-- Load Custom Logic -->
     <script src="script.js"></script>
 </body>
 </html>
