@@ -142,7 +142,7 @@
   .CodeMirror-gutters{ background: var(--panel-2) !important; border-right:1px solid var(--border) !important; }
   .CodeMirror-linenumber{ color:#5A5148 !important; }
   .CodeMirror-cursor{ border-left:2px solid var(--accent-2) !important; }
-  .cm-s-default .cm-keyword{ color:#E39A9A; }
+  .cm-s-default .cm-keyword{ color:#d24c4c; }
   .cm-s-default .cm-string{ color:#B7C98F; }
   .cm-s-default .cm-comment{ color:#756B60; font-style:italic; }
   .cm-s-default .cm-number{ color:#D8A657; }

@@ -1,0 +1,538 @@
+/* ============================================================
+   STARTER TEMPLATES
+   ============================================================ */
+const TEMPLATES = {
+python: `
+print("Hello, World!")
+`,
+cpp: `
+#include <iostream>
+using namespace std;
+
+int main() {
+    cout << "Hello, World!" << endl;
+    return 0;
+}
+`,
+java: `
+import java.util.Scanner;
+
+public class Main {
+    public static void main(String[] args) {
+        System.out.println("Hello, World!");
+    }
+}
+`
+};
+
+const LANG_META = {
+  python: { file: 'run.py', ext: '.py', mode: 'python', color: '#8FB08B' },
+  cpp:    { file: 'run.cpp', ext: '.cpp', mode: 'text/x-c++src', color: '#D8A657' },
+  java:   { file: 'run.java', ext: '.java', mode: 'text/x-java', color: '#8FB6C9' }
+};
+
+const state = {
+  lang: 'python',
+  code: { python: TEMPLATES.python, cpp: TEMPLATES.cpp, java: TEMPLATES.java }
+};
+
+const API = "http://localhost:5000/api";
+// const API = "https://your-server.onrender.com/api";
+
+let backendOnline = false;
+
+async function checkBackend() {
+
+    try {
+
+        const response = await fetch("http://localhost:5000/");
+
+        backendOnline = response.ok;
+
+    }
+
+    catch {
+
+        backendOnline = false;
+
+    }
+
+    if (!backendOnline) {
+
+        stState.textContent = "Backend Offline";
+
+        statusbar.classList.add("err");
+
+    }
+
+    else {
+
+        stState.textContent = "Ready";
+
+        statusbar.classList.remove("err");
+
+    }
+
+}
+
+
+
+/* ============================================================
+   EDITOR (CodeMirror)
+   ============================================================ */
+const cm = CodeMirror(document.getElementById('editorHost'), {
+  value: state.code.python,
+  mode: 'python',
+  lineNumbers: true,
+  indentUnit: 4,
+  tabSize: 4,
+  indentWithTabs: false,
+  viewportMargin: Infinity,
+  extraKeys: {
+    'Cmd-Enter': runCurrent,
+    'Ctrl-Enter': runCurrent
+  }
+});
+
+cm.on('change', () => { state.code[state.lang] = cm.getValue(); });
+
+/* ============================================================
+   TABS
+   ============================================================ */
+const tabsEl = document.getElementById('tabs');
+Object.keys(LANG_META).forEach(lang => {
+  const m = LANG_META[lang];
+  const el = document.createElement('div');
+  el.className = 'tab' + (lang === state.lang ? ' active' : '');
+  el.dataset.lang = lang;
+  el.style.setProperty('--lang-color', m.color);
+  el.innerHTML = `<span class="swatch"></span>${m.file.split('.')[0]}<span class="ext">.${m.ext.replace('.', '')}</span>`;
+  el.addEventListener('click', () => switchLang(lang));
+  tabsEl.appendChild(el);
+});
+
+function switchLang(lang){
+  if(lang === state.lang) return;
+  state.code[state.lang] = cm.getValue();
+  state.lang = lang;
+  const m = LANG_META[lang];
+  cm.setOption('mode', m.mode);
+  cm.setValue(state.code[lang]);
+  document.getElementById('editorLabel').textContent = m.file;
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.lang === lang));
+  document.getElementById('stLang').textContent = '● ' + lang[0].toUpperCase() + lang.slice(1);
+  document.getElementById("simNotice").style.display = "none";
+  document.getElementById("toggleJs").style.display = "none";
+  document.getElementById("jsOutput").style.display = "none";
+}
+
+/* ============================================================
+   CONSOLE / STATUS HELPERS
+   ============================================================ */
+const consoleEl = document.getElementById('console');
+const statusbar = document.getElementById('statusbar');
+const stState = document.getElementById('stState');
+const stTime = document.getElementById('stTime');
+const runBtn = document.getElementById('runBtn');
+
+function setConsole(text, cls){
+  consoleEl.textContent = '';
+  if(cls) consoleEl.innerHTML = `<span class="${cls}">${escapeHtml(text)}</span>`;
+  else consoleEl.textContent = text;
+}
+function appendConsole(text, cls){
+  const span = document.createElement('span');
+  if(cls) span.className = cls;
+  span.textContent = text;
+  consoleEl.appendChild(span);
+}
+
+function escapeHtml(s){
+
+    return String(s).replace(/[&<>]/g,c=>({
+
+        "&":"&amp;",
+
+        "<":"&lt;",
+
+        ">":"&gt;"
+
+    })[c]);
+
+}
+
+function setBusy(isBusy){
+
+    runBtn.disabled = isBusy;
+    runBtn.classList.toggle("running", isBusy);
+
+    if(!isBusy){
+
+        runBtn.textContent = "▶ Run";
+        stState.textContent = "Ready";
+        return;
+
+    }
+
+    if(state.lang === "python"){
+
+        runBtn.textContent = "Running...";
+        stState.textContent = "Running Python";
+
+    }
+
+    else{
+
+        runBtn.textContent = "Compiling...";
+        stState.textContent = "Compiling";
+
+    }
+
+}
+
+function setErrState(isErr){
+  statusbar.classList.toggle('err', isErr);
+}
+
+document.getElementById("clearBtn").addEventListener("click", () => {
+
+    consoleEl.innerHTML =
+        '<span class="placeholder">Run a program to see output here.</span>';
+
+    stTime.textContent = "";
+    setErrState(false);
+
+});
+
+document.getElementById('runBtn').addEventListener('click', runCurrent);
+
+/* ============================================================
+   RUN DISPATCH
+   ============================================================ */
+async function runCurrent() {
+
+    if (runBtn.disabled) return;
+
+    const lang = state.lang;
+
+    const code = cm.getValue();
+
+    const stdin = document.getElementById("stdin").value;
+
+    setBusy(true);
+
+    setErrState(false);
+
+    setConsole("", null);
+
+    const t0 = performance.now();
+
+    try {
+
+        let result;
+
+        switch (lang) {
+
+            case "python":
+
+                result = await runPython(code, stdin);
+
+                break;
+
+            case "cpp":
+
+                result = await runCpp(code, stdin);
+
+                break;
+
+            case "java":
+
+                result = await runJava(code, stdin);
+
+                break;
+
+            default:
+
+                throw new Error("Unsupported language.");
+
+        }
+
+        displayResult(result);
+
+    }
+
+    catch (err) {
+
+        appendConsole(
+
+            err.message,
+
+            "line-err"
+
+        );
+
+        setErrState(true);
+
+    }
+
+    finally {
+
+        stTime.textContent =
+            `${Math.round(performance.now() - t0)} ms`;
+
+        setBusy(false);
+
+    }
+
+}
+
+async function runPython(code, stdin) {
+
+    try {
+
+        const response = await fetch(`${API}/python`, {
+
+            method: "POST",
+
+            headers: {
+                "Content-Type": "application/json"
+            },
+
+            body: JSON.stringify({
+                code,
+                stdin
+            })
+
+        });
+
+        if (!response.ok) {
+            throw new Error("Compiler server error.");
+        }
+
+        return await response.json();
+
+    }
+
+    catch (err) {
+
+        return {
+
+            success: false,
+
+            type: "server_error",
+
+            language: "python",
+
+            output: "",
+
+            error: err.message,
+
+            exitCode: -1,
+
+            executionTime: 0
+
+        };
+
+    }
+
+}
+
+async function runCpp(code, stdin) {
+
+    try {
+
+        const response = await fetch(`${API}/cpp`, {
+
+            method: "POST",
+
+            headers: {
+                "Content-Type": "application/json"
+            },
+
+            body: JSON.stringify({
+                code,
+                stdin
+            })
+
+        });
+
+        if (!response.ok) {
+            throw new Error("Compiler server error.");
+        }
+
+        return await response.json();
+
+    }
+
+    catch (err) {
+
+        return {
+
+            success: false,
+
+            type: "server_error",
+
+            language: "cpp",
+
+            output: "",
+
+            error: err.message,
+
+            exitCode: -1,
+
+            executionTime: 0
+
+        };
+
+    }
+
+}
+
+
+async function runJava(code, stdin) {
+
+    try {
+
+        const response = await fetch(`${API}/java`, {
+
+            method: "POST",
+
+            headers: {
+                "Content-Type": "application/json"
+            },
+
+            body: JSON.stringify({
+                code,
+                stdin
+            })
+
+        });
+
+        if (!response.ok) {
+            throw new Error("Compiler server error.");
+        }
+
+        return await response.json();
+
+    }
+
+    catch (err) {
+
+        return {
+
+            success: false,
+
+            type: "server_error",
+
+            language: "java",
+
+            output: "",
+
+            error: err.message,
+
+            exitCode: -1,
+
+            executionTime: 0
+
+        };
+
+    }
+
+}
+
+function displayResult(result){
+
+    consoleEl.innerHTML = "";
+
+    setErrState(false);
+
+    if(result.type === "success"){
+      
+      const output = result.output ?? "";
+
+        if(output.trim().length){
+
+            appendConsole(output);
+
+        }
+
+        else{
+
+            appendConsole("(Program exited successfully)", "placeholder");
+
+        }
+
+    }
+
+    else{
+
+        switch(result.type){
+
+          case "compile_error":
+
+          appendConsole(
+          "❌ Compilation Failed\n\n",
+          "line-err");
+
+          appendConsole(result.error,"line-err");
+
+          break;
+
+          case "runtime_error":
+
+          appendConsole(
+          "⚠ Runtime Error\n\n",
+          "line-err");
+
+          appendConsole(result.error,"line-err");
+
+          break;
+
+          case "timeout":
+
+          appendConsole(
+          "⌛ Execution Timed Out\n\n",
+          "line-err");
+
+          appendConsole(result.error,"line-err");
+
+          break;
+
+          case "interpreter_error":
+
+          appendConsole(
+          "⚠ Interpreter Not Found\n\n",
+          "line-err");
+
+          appendConsole(result.error,"line-err");
+
+          break;
+
+          case "server_error":
+
+          appendConsole(
+          "⚠ Backend Offline\n\n",
+          "line-err");
+
+          appendConsole(result.error,"line-err");
+
+          break;
+
+        }
+
+        setErrState(true);
+
+    }
+
+    stTime.textContent =
+        `${result.executionTime} ms`;
+
+    stState.textContent =
+    `${result.language.toUpperCase()} | Exit ${result.exitCode}`;
+
+}
+
+
+checkBackend();
+
+setInterval(checkBackend, 10000);
