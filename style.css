@@ -1,0 +1,44 @@
+body {
+    background-color: #121212;
+    color: #00ff00;
+    font-family: 'Courier New', Courier, monospace;
+    padding: 20px;
+    margin: 0;
+}
+
+.terminal-container {
+    background-color: #050505;
+    border: 1px solid #333;
+    border-radius: 5px;
+    padding: 15px;
+    min-height: 400px;
+    box-shadow: 0 0 15px rgba(0, 255, 0, 0.1);
+    cursor: text;
+}
+
+.terminal-history {
+    white-space: pre-wrap;
+    margin-bottom: 10px;
+    line-height: 1.5;
+}
+
+.input-line {
+    display: flex;
+    align-items: center;
+}
+
+.prompt {
+    color: #00aaff;
+    margin-right: 10px;
+    user-select: none;
+}
+
+input[type="text"] {
+    background: transparent;
+    border: none;
+    color: #00ff00;
+    font-family: inherit;
+    font-size: inherit;
+    flex: 1;
+    outline: none;
+}

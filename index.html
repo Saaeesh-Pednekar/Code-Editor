@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Frontend Python Editor</title>
+    <!-- Load Monaco Editor Styles -->
+    <link rel="stylesheet" data-name="vs/css" href="https://cloudflare.com">
+    <!-- Load Pyodide WebAssembly Python Runtime -->
+    <script src="https://jsdelivr.net"></script>
+    <style>
+        body { font-family: sans-serif; margin: 20px; background: #1e1e1e; color: #fff; }
+        #editor { width: 100%; height: 400px; border: 1px solid #444; }
+        button { margin: 10px 0; padding: 10px 20px; background: #0e639c; color: white; border: none; cursor: pointer; font-weight: bold; }
+        button:disabled { background: #555; }
+        #output { width: 100%; height: 150px; background: #000; color: #00ff00; font-family: monospace; padding: 10px; box-sizing: border-box; overflow-y: auto; white-space: pre-wrap; }
+        #status { color: #aaa; font-style: italic; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+
+    <h2>Frontend-Only Python Editor</h2>
+    <div id="status">Loading Python runtime environment...</div>
+    
+    <div id="editor"></div>
+    <button id="run-btn" disabled>Run Code</button>
+    
+    <h3>Console Output</h3>
+    <div id="output"></div>
+
+    <!-- Configure Monaco Editor -->
+    <script src="https://cloudflare.com"></script>
+    <script>
+        let editor;
+        let pyodide;
+
+        // 1. Initialise Monaco Editor
+        require.config({ paths: { 'vs': 'https://cloudflare.com' } });
+        require(['vs/editor/editor.main'], function() {
+            editor = monaco.editor.create(document.getElementById('editor'), {
+                value: `def greet(name):\n    return f"Hello, {name} from the browser!"\n\nprint(greet("Developer"))\r\n\r\n# Try math operations\r\nimport math\r\nprint("Pi is:", math.pi)`,
+                language: 'python',
+                theme: 'vs-dark',
+                automaticLayout: true
+            });
+        });
+
+        // 2. Initialise Pyodide Python WASM Engine
+        async function initPython() {
+            try {
+                pyodide = await loadPyodide();
+                document.getElementById('status').innerText = "Python ready. Click Run!";
+                document.getElementById('run-btn').disabled = false;
+            } catch (err) {
+                document.getElementById('status').innerText = "Failed to load Python.";
+                console.error(err);
+            }
+        }
+        initPython();
+
+        // 3. Execute Code and Intercept Standard Output
+        document.getElementById('run-btn').addEventListener('click', async () => {
+            const outputDiv = document.getElementById('output');
+            outputDiv.innerText = "Running...\n";
+            
+            const userCode = editor.getValue();
+            
+            try {
+                // Redirect python print() statements directly to our HTML div
+                pyodide.runPython(`
+                    import sys
+                    import io
+                    sys.stdout = io.StringIO()
+                    sys.stderr = io.StringIO()
+                `);
+                
+                // Run the user's script
+                await pyodide.runPythonAsync(userCode);
+                
+                // Fetch stdout logs from the redirect tool
+                const stdout = pyodide.runPython("sys.stdout.getvalue()");
+                const stderr = pyodide.runPython("sys.stderr.getvalue()");
+                
+                outputDiv.innerText = stdout + stderr;
+            } catch (err) {
+                outputDiv.innerText = err.message;
+            }
+        });
+    </script>
+</body>
+</html>
