@@ -291,15 +291,7 @@
    ============================================================ */
 const TEMPLATES = {
 python: `# Python — this one runs for real, via Pyodide (WebAssembly)
-name = input("What's your name? ") or "World"
-print(f"Hello, {name}!")
-
-total = 0
-for i in range(1, 6):
-    total += i
-    print(f"i={i} running_total={total}")
-
-print("Sum 1..5 =", total)
+print("Hello, World!")
 `,
 cpp: `#include <iostream>
 #include <vector>
@@ -307,16 +299,6 @@ using namespace std;
 
 int main() {
     cout << "Hello, World!" << endl;
-
-    vector<int> nums;
-    int sum = 0;
-    for (int i = 1; i <= 5; i++) {
-        nums.push_back(i);
-        sum += i;
-    }
-
-    cout << "Sum 1..5 = " << sum << endl;
-    return 0;
 }
 `,
 java: `import java.util.Scanner;
@@ -324,12 +306,6 @@ java: `import java.util.Scanner;
 public class Main {
     public static void main(String[] args) {
         System.out.println("Hello, World!");
-
-        int sum = 0;
-        for (int i = 1; i <= 5; i++) {
-            sum += i;
-        }
-        System.out.println("Sum 1..5 = " + sum);
     }
 }
 `
