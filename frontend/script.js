@@ -2,27 +2,21 @@
    STARTER TEMPLATES
    ============================================================ */
 const TEMPLATES = {
-python: `
-print("Hello, World!")
-`,
-cpp: `
-#include <iostream>
+python: `print("Hello, World!")`,
+cpp: `#include <iostream>
 using namespace std;
 
 int main() {
     cout << "Hello, World!" << endl;
     return 0;
-}
-`,
-java: `
-import java.util.Scanner;
+}`,
+java: `import java.util.Scanner;
 
 public class Main {
     public static void main(String[] args) {
         System.out.println("Hello, World!");
     }
-}
-`
+}`
 };
 
 const LANG_META = {
@@ -31,9 +25,20 @@ const LANG_META = {
   java:   { file: 'run.java', ext: '.java', mode: 'text/x-java', color: '#8FB6C9' }
 };
 
+// ! State of the code and creates temporary storage
 const state = {
-  lang: 'python',
-  code: { python: TEMPLATES.python, cpp: TEMPLATES.cpp, java: TEMPLATES.java }
+    lang: sessionStorage.getItem("codebox-language") || "python",
+    code: {
+        python:
+            sessionStorage.getItem("codebox-python")
+            || TEMPLATES.python,
+        cpp:
+            sessionStorage.getItem("codebox-cpp")
+            || TEMPLATES.cpp,
+        java:
+            sessionStorage.getItem("codebox-java")
+            || TEMPLATES.java
+    }
 };
 
 const API = "http://localhost:5000/api";
@@ -42,59 +47,55 @@ const API = "http://localhost:5000/api";
 let backendOnline = false;
 
 // ! Backend Check Function
-
 async function checkBackend() {
 
     try {
-
         const response = await fetch("http://localhost:5000/");
-
         backendOnline = response.ok;
-
     }
 
     catch {
-
         backendOnline = false;
-
     }
 
     if (!backendOnline) {
-
         stState.textContent = "Backend Offline";
-
         statusbar.classList.add("err");
-
     }
 
     else {
-
         statusbar.classList.remove("err");
-
         if (!runBtn.disabled) {
             stState.textContent = "Ready";
         }
-
     }
 }
 
 // ! CodeMirror Properties
+const cm = CodeMirror(document.getElementById("editorHost"), {
+    value: state.code[state.lang],
+    mode: LANG_META[state.lang].mode,
+    lineNumbers: true,
+    indentUnit: 4,
+    tabSize: 4,
+    indentWithTabs: false,
+    viewportMargin: Infinity,
 
-const cm = CodeMirror(document.getElementById('editorHost'), {
-  value: state.code.python,
-  mode: 'python',
-  lineNumbers: true,
-  indentUnit: 4,
-  tabSize: 4,
-  indentWithTabs: false,
-  viewportMargin: Infinity,
-  extraKeys: {
-    'Cmd-Enter': runCurrent,
-    'Ctrl-Enter': runCurrent
-  }
+    extraKeys: {
+        "Cmd-Enter": runCurrent,
+        "Ctrl-Enter": runCurrent
+    }
 });
 
-cm.on('change', () => { state.code[state.lang] = cm.getValue(); });
+// ! Change the language
+cm.on("change", () => {
+    const code = cm.getValue();
+    state.code[state.lang] = code;
+    sessionStorage.setItem(
+        `codebox-${state.lang}`,
+        code
+    );
+});
 
 /* ============================================================
    TABS
@@ -112,32 +113,77 @@ Object.keys(LANG_META).forEach(lang => {
 });
 
 // ! Function to switch language
+function switchLang(lang) {
 
-function switchLang(lang){
-  if(lang === state.lang) return;
-  state.code[state.lang] = cm.getValue();
-  state.lang = lang;
-  const m = LANG_META[lang];
-  cm.setOption('mode', m.mode);
-  cm.setValue(state.code[lang]);
-  document.getElementById('editorLabel').textContent = m.file;
-  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.lang === lang));
-  document.getElementById('stLang').textContent = '● ' + lang[0].toUpperCase() + lang.slice(1);
-  document.getElementById("simNotice").style.display = "none";
-  document.getElementById("toggleJs").style.display = "none";
-  document.getElementById("jsOutput").style.display = "none";
+    if (lang === state.lang) return;
+
+    // Save current language's code
+    state.code[state.lang] = cm.getValue();
+    sessionStorage.setItem(
+        `codebox-${state.lang}`,
+        state.code[state.lang]
+    );
+
+    // Change language
+    state.lang = lang;
+    sessionStorage.setItem(
+        "codebox-language",
+        lang
+    );
+
+    const m = LANG_META[lang];
+    cm.setOption("mode", m.mode);
+    cm.setValue(state.code[lang]);
+
+    document.getElementById("editorLabel").textContent = m.file;
+    document.querySelectorAll(".tab")
+        .forEach(t =>
+            t.classList.toggle(
+                "active",
+                t.dataset.lang === lang
+            )
+        );
+
+    document.getElementById("stLang").textContent = "● " + lang[0].toUpperCase() + lang.slice(1);
+    document.getElementById("simNotice").style.display = "none";
+    document.getElementById("toggleJs").style.display = "none";
+    document.getElementById("jsOutput").style.display = "none";
 }
 
 // ! Console Status Helpers
+const consoleEl = document.getElementById("console");
+const statusbar = document.getElementById("statusbar");
+const stState = document.getElementById("stState");
+const stTime = document.getElementById("stTime");
+const runBtn = document.getElementById("runBtn");
+const clearBtn = document.getElementById("clearBtn");
 
-const consoleEl = document.getElementById('console');
-const statusbar = document.getElementById('statusbar');
-const stState = document.getElementById('stState');
-const stTime = document.getElementById('stTime');
-const runBtn = document.getElementById('runBtn');
+// ============================================================
+// PREVENT BUTTONS FROM SUBMITTING / RELOADING THE PAGE
+// ============================================================
+
+if (runBtn) {
+    runBtn.type = "button";
+}
+
+if (clearBtn) {
+    clearBtn.type = "button";
+}
+
+// Prevent any form containing these controls from submitting.
+document.addEventListener("submit", function (event) {
+
+    if (
+        event.target.contains(runBtn) ||
+        event.target.contains(clearBtn)
+    ) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+
+}, true);
 
 // ! Set Console Function
-
 function setConsole(text, cls){
   consoleEl.textContent = '';
   if(cls) consoleEl.innerHTML = `<span class="${cls}">${escapeHtml(text)}</span>`;
@@ -145,7 +191,6 @@ function setConsole(text, cls){
 }
 
 // ! Append Console Function
-
 function appendConsole(text, cls){
   const span = document.createElement('span');
   if(cls) span.className = cls;
@@ -154,23 +199,15 @@ function appendConsole(text, cls){
 }
 
 // ! Escape Html Function
-
 function escapeHtml(s){
-
     return String(s).replace(/[&<>]/g,c=>({
-
         "&":"&amp;",
-
         "<":"&lt;",
-
         ">":"&gt;"
-
     })[c]);
-
 }
 
 // ! Set Busy Function
-
 function setBusy(isBusy) {
 
     runBtn.disabled = isBusy;
@@ -184,42 +221,56 @@ function setBusy(isBusy) {
     if (state.lang === "python") {
         runBtn.textContent = "Running...";
         stState.textContent = "Running Python";
-    } else {
+    } 
+    else {
         runBtn.textContent = "Compiling...";
         stState.textContent = "Compiling";
     }
 }
 
+// ! Function to display error
 function setErrState(isErr){
   statusbar.classList.toggle('err', isErr);
 }
 
-
-document.getElementById("clearBtn").addEventListener("click", () => {
+// ! Clear Button
+document.getElementById("clearBtn").addEventListener("click", function (event) {
+    event.preventDefault();
+    event.stopPropagation();
 
     consoleEl.innerHTML =
         '<span class="placeholder">Run a program to see output here.</span>';
 
     stTime.textContent = "";
     setErrState(false);
-
 });
 
-document.getElementById('runBtn').addEventListener('click', runCurrent);
+// ! Run Button
+document.getElementById("runBtn").addEventListener("click", function (event) {
+    event.preventDefault();
+    event.stopPropagation();
+    runCurrent();
+});
 
 // ! Run Current Function
+async function runCurrent(event) {
 
-async function runCurrent() {
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
 
     if (runBtn.disabled) return;
 
     const lang = state.lang;
     const code = cm.getValue();
     const stdin = document.getElementById("stdin").value;
+    // IMPORTANT:
+    // Save the latest code before execution.
+    state.code[lang] = code;
     setBusy(true);
     setErrState(false);
     setConsole("", null);
-    const t0 = performance.now();
 
     try {
         let result;
@@ -240,29 +291,25 @@ async function runCurrent() {
             default:
                 throw new Error("Unsupported language.");
         }
-
         displayResult(result);
-
     }
 
     catch (err) {
+
         appendConsole(
-            err.message,
+            err?.message || "Unknown error.",
             "line-err"
         );
         setErrState(true);
+
     }
 
     finally {
-        // stTime.textContent =
-        //     `${Math.round(performance.now() - t0)} ms`;
         setBusy(false);
     }
-
 }
 
 // ! Running Python Code
-
 async function runPython(code, stdin) {
 
     try {
@@ -298,7 +345,6 @@ async function runPython(code, stdin) {
 }
 
 // ! Running CPP Code
-
 async function runCpp(code, stdin) {
 
     try {
@@ -333,7 +379,6 @@ async function runCpp(code, stdin) {
 }
 
 // ! Running Java Code
-
 async function runJava(code, stdin) {
 
     try {
@@ -368,7 +413,6 @@ async function runJava(code, stdin) {
 }
 
 // ! Function to display the output
-
 function displayResult(result){
 
     consoleEl.innerHTML = "";
