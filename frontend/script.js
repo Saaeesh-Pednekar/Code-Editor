@@ -41,6 +41,8 @@ const API = "http://localhost:5000/api";
 
 let backendOnline = false;
 
+// ! Backend Check Function
+
 async function checkBackend() {
 
     try {
@@ -67,19 +69,17 @@ async function checkBackend() {
 
     else {
 
-        stState.textContent = "Ready";
-
         statusbar.classList.remove("err");
 
-    }
+        if (!runBtn.disabled) {
+            stState.textContent = "Ready";
+        }
 
+    }
 }
 
+// ! CodeMirror Properties
 
-
-/* ============================================================
-   EDITOR (CodeMirror)
-   ============================================================ */
 const cm = CodeMirror(document.getElementById('editorHost'), {
   value: state.code.python,
   mode: 'python',
@@ -111,6 +111,8 @@ Object.keys(LANG_META).forEach(lang => {
   tabsEl.appendChild(el);
 });
 
+// ! Function to switch language
+
 function switchLang(lang){
   if(lang === state.lang) return;
   state.code[state.lang] = cm.getValue();
@@ -126,26 +128,32 @@ function switchLang(lang){
   document.getElementById("jsOutput").style.display = "none";
 }
 
-/* ============================================================
-   CONSOLE / STATUS HELPERS
-   ============================================================ */
+// ! Console Status Helpers
+
 const consoleEl = document.getElementById('console');
 const statusbar = document.getElementById('statusbar');
 const stState = document.getElementById('stState');
 const stTime = document.getElementById('stTime');
 const runBtn = document.getElementById('runBtn');
 
+// ! Set Console Function
+
 function setConsole(text, cls){
   consoleEl.textContent = '';
   if(cls) consoleEl.innerHTML = `<span class="${cls}">${escapeHtml(text)}</span>`;
   else consoleEl.textContent = text;
 }
+
+// ! Append Console Function
+
 function appendConsole(text, cls){
   const span = document.createElement('span');
   if(cls) span.className = cls;
   span.textContent = text;
   consoleEl.appendChild(span);
 }
+
+// ! Escape Html Function
 
 function escapeHtml(s){
 
@@ -161,38 +169,31 @@ function escapeHtml(s){
 
 }
 
-function setBusy(isBusy){
+// ! Set Busy Function
+
+function setBusy(isBusy) {
 
     runBtn.disabled = isBusy;
     runBtn.classList.toggle("running", isBusy);
 
-    if(!isBusy){
-
+    if (!isBusy) {
         runBtn.textContent = "▶ Run";
-        stState.textContent = "Ready";
         return;
-
     }
 
-    if(state.lang === "python"){
-
+    if (state.lang === "python") {
         runBtn.textContent = "Running...";
         stState.textContent = "Running Python";
-
-    }
-
-    else{
-
+    } else {
         runBtn.textContent = "Compiling...";
         stState.textContent = "Compiling";
-
     }
-
 }
 
 function setErrState(isErr){
   statusbar.classList.toggle('err', isErr);
 }
+
 
 document.getElementById("clearBtn").addEventListener("click", () => {
 
@@ -206,55 +207,38 @@ document.getElementById("clearBtn").addEventListener("click", () => {
 
 document.getElementById('runBtn').addEventListener('click', runCurrent);
 
-/* ============================================================
-   RUN DISPATCH
-   ============================================================ */
+// ! Run Current Function
+
 async function runCurrent() {
 
     if (runBtn.disabled) return;
 
     const lang = state.lang;
-
     const code = cm.getValue();
-
     const stdin = document.getElementById("stdin").value;
-
     setBusy(true);
-
     setErrState(false);
-
     setConsole("", null);
-
     const t0 = performance.now();
 
     try {
-
         let result;
 
         switch (lang) {
-
             case "python":
-
                 result = await runPython(code, stdin);
-
                 break;
 
             case "cpp":
-
                 result = await runCpp(code, stdin);
-
                 break;
 
             case "java":
-
                 result = await runJava(code, stdin);
-
                 break;
 
             default:
-
                 throw new Error("Unsupported language.");
-
         }
 
         displayResult(result);
@@ -262,206 +246,144 @@ async function runCurrent() {
     }
 
     catch (err) {
-
         appendConsole(
-
             err.message,
-
             "line-err"
-
         );
-
         setErrState(true);
-
     }
 
     finally {
-
-        stTime.textContent =
-            `${Math.round(performance.now() - t0)} ms`;
-
+        // stTime.textContent =
+        //     `${Math.round(performance.now() - t0)} ms`;
         setBusy(false);
-
     }
 
 }
+
+// ! Running Python Code
 
 async function runPython(code, stdin) {
 
     try {
-
         const response = await fetch(`${API}/python`, {
-
             method: "POST",
-
             headers: {
                 "Content-Type": "application/json"
             },
-
             body: JSON.stringify({
                 code,
                 stdin
             })
-
         });
 
         if (!response.ok) {
             throw new Error("Compiler server error.");
         }
-
         return await response.json();
 
     }
 
     catch (err) {
-
         return {
-
             success: false,
-
             type: "server_error",
-
             language: "python",
-
             output: "",
-
             error: err.message,
-
             exitCode: -1,
-
             executionTime: 0
-
         };
-
     }
-
 }
+
+// ! Running CPP Code
 
 async function runCpp(code, stdin) {
 
     try {
-
         const response = await fetch(`${API}/cpp`, {
-
             method: "POST",
-
             headers: {
                 "Content-Type": "application/json"
             },
-
             body: JSON.stringify({
                 code,
                 stdin
             })
-
         });
 
         if (!response.ok) {
             throw new Error("Compiler server error.");
         }
-
         return await response.json();
-
     }
 
     catch (err) {
-
         return {
-
             success: false,
-
             type: "server_error",
-
             language: "cpp",
-
             output: "",
-
             error: err.message,
-
             exitCode: -1,
-
             executionTime: 0
-
         };
-
     }
-
 }
 
+// ! Running Java Code
 
 async function runJava(code, stdin) {
 
     try {
-
         const response = await fetch(`${API}/java`, {
-
             method: "POST",
-
             headers: {
                 "Content-Type": "application/json"
             },
-
             body: JSON.stringify({
                 code,
                 stdin
             })
-
         });
 
         if (!response.ok) {
             throw new Error("Compiler server error.");
         }
-
         return await response.json();
-
     }
 
     catch (err) {
-
         return {
-
             success: false,
-
             type: "server_error",
-
             language: "java",
-
             output: "",
-
             error: err.message,
-
             exitCode: -1,
-
             executionTime: 0
-
         };
-
     }
-
 }
+
+// ! Function to display the output
 
 function displayResult(result){
 
     consoleEl.innerHTML = "";
-
     setErrState(false);
 
     if(result.type === "success"){
-      
       const output = result.output ?? "";
 
         if(output.trim().length){
-
             appendConsole(output);
-
         }
 
         else{
-
             appendConsole("(Program exited successfully)", "placeholder");
-
         }
-
     }
 
     else{
@@ -469,55 +391,50 @@ function displayResult(result){
         switch(result.type){
 
           case "compile_error":
-
           appendConsole(
           "❌ Compilation Failed\n\n",
           "line-err");
-
           appendConsole(result.error,"line-err");
-
           break;
 
           case "runtime_error":
-
           appendConsole(
           "⚠ Runtime Error\n\n",
           "line-err");
-
           appendConsole(result.error,"line-err");
-
           break;
 
           case "timeout":
-
           appendConsole(
           "⌛ Execution Timed Out\n\n",
           "line-err");
-
           appendConsole(result.error,"line-err");
-
           break;
 
           case "interpreter_error":
-
           appendConsole(
           "⚠ Interpreter Not Found\n\n",
           "line-err");
-
           appendConsole(result.error,"line-err");
-
           break;
 
           case "server_error":
-
           appendConsole(
           "⚠ Backend Offline\n\n",
           "line-err");
-
           appendConsole(result.error,"line-err");
-
           break;
 
+          default:
+          appendConsole(
+            "⚠ Unknown Error\n\n",
+            "line-err"
+          );
+          appendConsole(
+            result.error || "Unknown compiler response.",
+            "line-err"
+          );
+          break;
         }
 
         setErrState(true);
@@ -531,7 +448,6 @@ function displayResult(result){
     `${result.language.toUpperCase()} | Exit ${result.exitCode}`;
 
 }
-
 
 checkBackend();
 
