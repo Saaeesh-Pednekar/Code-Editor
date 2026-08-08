@@ -1,8 +1,3 @@
-// console.log(
-//     "CODEBOX SCRIPT LOADED",
-//     new Date().toISOString()
-// );
-
 /* ============================================================
    STARTER TEMPLATES
    ============================================================ */
@@ -262,6 +257,7 @@ document.addEventListener("submit", function (event) {
 
 // ! Set Console Function
 function setConsole(text, cls){
+//   console.trace("🔥 setConsole CALLED");
   consoleEl.textContent = '';
   if(cls) consoleEl.innerHTML = `<span class="${cls}">${escapeHtml(text)}</span>`;
   else consoleEl.textContent = text;
@@ -341,11 +337,6 @@ document.getElementById("clearBtn").addEventListener("click", function (event) {
 });
 
 // ! Run Button
-// document.getElementById("runBtn").addEventListener("click", function (event) {
-//     event.preventDefault();
-//     event.stopPropagation();
-//     runCurrent();
-// });
 runBtn.addEventListener("click", runCurrent);
 
 // ! Run Current Function
@@ -585,6 +576,7 @@ async function runJava(code, stdin) {
 function displayResult(result){
 
     consoleEl.innerHTML = "";
+    // console.log("🔥 displayResult CALLED", result);
     setErrState(false);
 
     if(result.type === "success"){
