@@ -1,3 +1,8 @@
+// console.log(
+//     "CODEBOX SCRIPT LOADED",
+//     new Date().toISOString()
+// );
+
 /* ============================================================
    STARTER TEMPLATES
    ============================================================ */
@@ -50,25 +55,43 @@ let backendOnline = false;
 async function checkBackend() {
 
     try {
-        const response = await fetch("http://localhost:5000/");
+
+        const response =
+            await fetch("http://localhost:5000/");
+
         backendOnline = response.ok;
+
     }
 
     catch {
+
         backendOnline = false;
+
     }
 
     if (!backendOnline) {
-        stState.textContent = "Backend Offline";
+
+        stState.textContent =
+            "Backend Offline";
+
         statusbar.classList.add("err");
+
     }
 
     else {
+
         statusbar.classList.remove("err");
+
         if (!runBtn.disabled) {
+
+            // Don't change stLang here.
+            // Only change execution status.
             stState.textContent = "Ready";
+
         }
+
     }
+
 }
 
 // ! CodeMirror Properties
@@ -97,6 +120,42 @@ cm.on("change", () => {
     );
 });
 
+// ! Console Status Helpers
+const consoleEl = document.getElementById("console");
+const statusbar = document.getElementById("statusbar");
+const stState = document.getElementById("stState");
+const stTime = document.getElementById("stTime");
+const runBtn = document.getElementById("runBtn");
+const clearBtn = document.getElementById("clearBtn");
+
+// ! Language Synchronization
+function syncLanguageUI() {
+
+    const lang = state.lang;
+    const meta = LANG_META[lang];
+
+    // Filename above editor
+    document.getElementById("editorLabel").textContent =
+        meta.file;
+
+    // Bottom-left language
+    document.getElementById("stLang").textContent =
+        "● " +
+        lang.charAt(0).toUpperCase() +
+        lang.slice(1);
+
+    // Active language tab
+    document.querySelectorAll(".tab").forEach(tab => {
+
+        tab.classList.toggle(
+            "active",
+            tab.dataset.lang === lang
+        );
+
+    });
+
+}
+
 /* ============================================================
    TABS
    ============================================================ */
@@ -112,51 +171,69 @@ Object.keys(LANG_META).forEach(lang => {
   tabsEl.appendChild(el);
 });
 
+syncLanguageUI();
+
 // ! Function to switch language
 function switchLang(lang) {
 
-    if (lang === state.lang) return;
+    if (lang === state.lang) {
+        return;
+    }
 
-    // Save current language's code
-    state.code[state.lang] = cm.getValue();
+    // --------------------------------------------------------
+    // Save current language code
+    // --------------------------------------------------------
+
+    const currentCode = cm.getValue();
+
+    state.code[state.lang] = currentCode;
+
     sessionStorage.setItem(
         `codebox-${state.lang}`,
-        state.code[state.lang]
+        currentCode
     );
 
+    // --------------------------------------------------------
     // Change language
+    // --------------------------------------------------------
+
     state.lang = lang;
+
     sessionStorage.setItem(
         "codebox-language",
         lang
     );
 
-    const m = LANG_META[lang];
-    cm.setOption("mode", m.mode);
-    cm.setValue(state.code[lang]);
+    const meta = LANG_META[lang];
 
-    document.getElementById("editorLabel").textContent = m.file;
-    document.querySelectorAll(".tab")
-        .forEach(t =>
-            t.classList.toggle(
-                "active",
-                t.dataset.lang === lang
-            )
-        );
+    // Change CodeMirror syntax mode
+    cm.setOption(
+        "mode",
+        meta.mode
+    );
 
-    document.getElementById("stLang").textContent = "● " + lang[0].toUpperCase() + lang.slice(1);
-    document.getElementById("simNotice").style.display = "none";
-    document.getElementById("toggleJs").style.display = "none";
-    document.getElementById("jsOutput").style.display = "none";
+    // Load saved code
+    cm.setValue(
+        state.code[lang]
+    );
+
+    // Update all language-related UI
+    syncLanguageUI();
+
+    // Hide old simulation controls
+    document.getElementById(
+        "simNotice"
+    ).style.display = "none";
+
+    document.getElementById(
+        "toggleJs"
+    ).style.display = "none";
+
+    document.getElementById(
+        "jsOutput"
+    ).style.display = "none";
+
 }
-
-// ! Console Status Helpers
-const consoleEl = document.getElementById("console");
-const statusbar = document.getElementById("statusbar");
-const stState = document.getElementById("stState");
-const stTime = document.getElementById("stTime");
-const runBtn = document.getElementById("runBtn");
-const clearBtn = document.getElementById("clearBtn");
 
 // ============================================================
 // PREVENT BUTTONS FROM SUBMITTING / RELOADING THE PAGE
@@ -211,21 +288,39 @@ function escapeHtml(s){
 function setBusy(isBusy) {
 
     runBtn.disabled = isBusy;
-    runBtn.classList.toggle("running", isBusy);
+
+    runBtn.classList.toggle(
+        "running",
+        isBusy
+    );
 
     if (!isBusy) {
+
         runBtn.textContent = "▶ Run";
+
         return;
     }
 
     if (state.lang === "python") {
-        runBtn.textContent = "Running...";
-        stState.textContent = "Running Python";
-    } 
-    else {
-        runBtn.textContent = "Compiling...";
-        stState.textContent = "Compiling";
+
+        runBtn.textContent =
+            "Running...";
+
+        stState.textContent =
+            "Running Python";
+
     }
+
+    else {
+
+        runBtn.textContent =
+            "Compiling...";
+
+        stState.textContent =
+            `Compiling ${state.lang.toUpperCase()}`;
+
+    }
+
 }
 
 // ! Function to display error
@@ -246,69 +341,143 @@ document.getElementById("clearBtn").addEventListener("click", function (event) {
 });
 
 // ! Run Button
-document.getElementById("runBtn").addEventListener("click", function (event) {
-    event.preventDefault();
-    event.stopPropagation();
-    runCurrent();
-});
+// document.getElementById("runBtn").addEventListener("click", function (event) {
+//     event.preventDefault();
+//     event.stopPropagation();
+//     runCurrent();
+// });
+runBtn.addEventListener("click", runCurrent);
 
 // ! Run Current Function
 async function runCurrent(event) {
+
+    console.log("========== RUN START ==========");
+    console.log("Language:", state.lang);
+    console.log("Code:", cm.getValue());
 
     if (event) {
         event.preventDefault();
         event.stopPropagation();
     }
 
-    if (runBtn.disabled) return;
+    if (runBtn.disabled) {
+        console.log("Run ignored: button disabled");
+        return;
+    }
 
     const lang = state.lang;
     const code = cm.getValue();
     const stdin = document.getElementById("stdin").value;
-    // IMPORTANT:
-    // Save the latest code before execution.
+
+    console.log("Executing:", lang);
+    console.log("Code length:", code.length);
+
+    // Save current state
     state.code[lang] = code;
+
+    sessionStorage.setItem(
+        `codebox-${lang}`,
+        code
+    );
+
+    sessionStorage.setItem(
+        "codebox-language",
+        lang
+    );
+
     setBusy(true);
     setErrState(false);
+
+    // Clear old output
     setConsole("", null);
 
     try {
+
         let result;
 
         switch (lang) {
+
             case "python":
-                result = await runPython(code, stdin);
+
+                console.log("Calling Python backend");
+
+                result = await runPython(
+                    code,
+                    stdin
+                );
+
                 break;
 
             case "cpp":
-                result = await runCpp(code, stdin);
+
+                console.log("Calling C++ backend");
+
+                result = await runCpp(
+                    code,
+                    stdin
+                );
+
                 break;
 
             case "java":
-                result = await runJava(code, stdin);
+
+                console.log("Calling Java backend");
+
+                result = await runJava(
+                    code,
+                    stdin
+                );
+
                 break;
 
             default:
-                throw new Error("Unsupported language.");
+
+                throw new Error(
+                    "Unsupported language: " + lang
+                );
         }
+
+        console.log("Backend result:", result);
+
         displayResult(result);
+
     }
 
     catch (err) {
 
+        console.error(
+            "Execution error:",
+            err
+        );
+
         appendConsole(
-            err?.message || "Unknown error.",
+            err.message || "Unknown error.",
             "line-err"
         );
+
         setErrState(true);
 
     }
 
     finally {
-        setBusy(false);
-    }
-}
 
+        console.log(
+            "Run finished. Current language:",
+            state.lang
+        );
+
+        console.log(
+            "Current editor:",
+            cm.getValue()
+        );
+
+        setBusy(false);
+
+        console.log("========== RUN END ==========");
+
+    }
+
+}
 // ! Running Python Code
 async function runPython(code, stdin) {
 
