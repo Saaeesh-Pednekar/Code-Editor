@@ -1,0 +1,40 @@
+services:
+
+  # FRONTEND
+  frontend:
+
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+
+    container_name: codebox-frontend
+
+    ports:
+      - "8080:80"
+
+    depends_on:
+      - backend
+
+    restart: unless-stopped
+
+  # BACKEND
+  backend:
+
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+
+    container_name: codebox-backend
+
+    ports:
+      - "5000:5000"
+
+    restart: unless-stopped
+
+    environment:
+      NODE_ENV: production
+
+    # Resource limits are particularly important because
+    # this service executes user-submitted programs.
+    mem_limit: 512m
+    cpus: 1.0
