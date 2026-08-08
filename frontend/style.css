@@ -150,7 +150,9 @@
   .cm-s-default .cm-variable{ color:var(--text); }
   .cm-s-default .cm-operator{ color:#C9BBA8; }
   .cm-s-default .cm-atom{ color:#D8A657; }
-
+  .cm-s-default .cm-builtin { color: rgb(27, 219, 203); }
+  .cm-s-default .cm-meta { color: #1ec1de; }
+  
   #editorHost{ flex:1; min-height:0; }
 
   .stdin-box{

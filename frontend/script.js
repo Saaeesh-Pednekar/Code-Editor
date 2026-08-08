@@ -1,6 +1,4 @@
-/* ============================================================
-   STARTER TEMPLATES
-   ============================================================ */
+// ! STARTER TEMPLATES
 const TEMPLATES = {
 python: `print("Hello, World!")`,
 cpp: `#include <iostream>
@@ -78,15 +76,9 @@ async function checkBackend() {
         statusbar.classList.remove("err");
 
         if (!runBtn.disabled) {
-
-            // Don't change stLang here.
-            // Only change execution status.
             stState.textContent = "Ready";
-
         }
-
     }
-
 }
 
 // ! CodeMirror Properties
