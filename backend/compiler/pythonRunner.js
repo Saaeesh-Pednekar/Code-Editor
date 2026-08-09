@@ -119,7 +119,7 @@ function executePython(sourceFile, stdin, cwd) {
 
                 output: "",
 
-                error: "Execution timed out (5 seconds).",
+                error: "Execution timed out (15 seconds).",
 
                 exitCode: -1,
 
@@ -127,7 +127,7 @@ function executePython(sourceFile, stdin, cwd) {
 
             });
 
-        }, 5000);
+        }, 15000);
 
         // Program finished
         python.on("close", (code) => {

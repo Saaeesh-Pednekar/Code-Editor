@@ -41,7 +41,13 @@ const state = {
 
 
 // const API = "http://localhost:5000/api";
-const API = "https://codebox-qfua.onrender.com/api";
+// const API = "https://codebox-qfua.onrender.com/api";
+
+const API =
+    window.location.hostname === "localhost" ||
+    window.location.hostname === "127.0.0.1"
+        ? "http://localhost:5000/api"
+        : "https://codebox-qfua.onrender.com/api";
 
 let backendOnline = false;
 

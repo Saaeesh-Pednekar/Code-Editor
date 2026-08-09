@@ -229,7 +229,7 @@ function executeJava(cwd, stdin) {
 
                 output: "",
 
-                error: "Execution timed out (5 seconds).",
+                error: "Execution timed out (15 seconds).",
 
                 exitCode: -1,
 
@@ -237,7 +237,7 @@ function executeJava(cwd, stdin) {
 
             });
 
-        }, 5000);
+        }, 15000);
 
         runner.on("close", code => {
 
