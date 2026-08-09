@@ -99,9 +99,13 @@ const cm = CodeMirror(document.getElementById("editorHost"), {
     viewportMargin: Infinity,
 
     extraKeys: {
-        "Cmd-Enter": runCurrent,
-        "Ctrl-Enter": runCurrent
-    }
+        "Ctrl-Enter": function(cm) {
+            runCurrent();
+        },
+        "Cmd-Enter": function(cm) {
+            runCurrent();
+        }
+}
 });
 
 // ! Change the language
@@ -121,6 +125,24 @@ const stState = document.getElementById("stState");
 const stTime = document.getElementById("stTime");
 const runBtn = document.getElementById("runBtn");
 const clearBtn = document.getElementById("clearBtn");
+
+
+// ! For keyboard events 
+cm.getWrapperElement().addEventListener("keydown", function(event) {
+
+    // Windows / Linux: Ctrl + Enter
+    // macOS: Command + Enter
+    if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
+
+        event.preventDefault();
+        event.stopPropagation();
+
+        if (!runBtn.disabled) {
+            runCurrent(event);
+        }
+    }
+
+});
 
 // ! Language Synchronization
 function syncLanguageUI() {
