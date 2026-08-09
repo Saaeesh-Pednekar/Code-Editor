@@ -143,9 +143,8 @@ function syncLanguageUI() {
 
 }
 
-/* ============================================================
-   TABS
-   ============================================================ */
+
+// !   TABS
 const tabsEl = document.getElementById('tabs');
 Object.keys(LANG_META).forEach(lang => {
   const m = LANG_META[lang];
@@ -167,9 +166,8 @@ function switchLang(lang) {
         return;
     }
 
-    // --------------------------------------------------------
-    // Save current language code
-    // --------------------------------------------------------
+
+    // ! Save current language code
 
     const currentCode = cm.getValue();
 
@@ -180,10 +178,7 @@ function switchLang(lang) {
         currentCode
     );
 
-    // --------------------------------------------------------
-    // Change language
-    // --------------------------------------------------------
-
+    // ! Change language
     state.lang = lang;
 
     sessionStorage.setItem(
