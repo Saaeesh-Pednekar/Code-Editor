@@ -50,7 +50,7 @@ async function checkBackend() {
     try {
 
         const response =
-            await fetch("http://localhost:5000/");
+            await fetch("https://codebox-qfua.onrender.com");
 
         backendOnline = response.ok;
 
