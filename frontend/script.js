@@ -39,6 +39,7 @@ const state = {
     }
 };
 
+
 // const API = "http://localhost:5000/api";
 const API = "https://codebox-qfua.onrender.com";
 
@@ -121,17 +122,17 @@ function syncLanguageUI() {
     const lang = state.lang;
     const meta = LANG_META[lang];
 
-    // Filename above editor
+    // ! Filename above editor
     document.getElementById("editorLabel").textContent =
         meta.file;
 
-    // Bottom-left language
+    // ! Bottom-left language
     document.getElementById("stLang").textContent =
         "● " +
         lang.charAt(0).toUpperCase() +
         lang.slice(1);
 
-    // Active language tab
+    // ! Active language tab
     document.querySelectorAll(".tab").forEach(tab => {
 
         tab.classList.toggle(
