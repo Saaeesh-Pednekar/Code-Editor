@@ -41,7 +41,7 @@ const state = {
 
 
 // const API = "http://localhost:5000/api";
-const API = "https://codebox-qfua.onrender.com";
+const API = "https://codebox-qfua.onrender.com/api";
 
 let backendOnline = false;
 
@@ -218,9 +218,7 @@ function switchLang(lang) {
 
 }
 
-// ============================================================
-// PREVENT BUTTONS FROM SUBMITTING / RELOADING THE PAGE
-// ============================================================
+// ! PREVENT BUTTONS FROM SUBMITTING / RELOADING THE PAGE
 
 if (runBtn) {
     runBtn.type = "button";
@@ -230,7 +228,7 @@ if (clearBtn) {
     clearBtn.type = "button";
 }
 
-// Prevent any form containing these controls from submitting.
+// ! Prevent any form containing these controls from submitting.
 document.addEventListener("submit", function (event) {
 
     if (
