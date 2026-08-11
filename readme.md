@@ -86,9 +86,9 @@ Compile / Execute
    ├── Error ────► Error Message
    │
    └── Timeout ──► Execution Timeout
+```
 
-
-##☁️ Cloud Deployment
+## ☁️ Cloud Deployment
 
                    ┌───────────────────────┐
                    │       User Browser    │
@@ -120,7 +120,7 @@ Compile / Execute
                    │ Output / Error / Time │
                    └───────────────────────┘
 
-##🏗️ System Architecture
+## 🏗️ System Architecture
 
 ┌──────────────────────────────────────────────────────────┐
 │                    CLIENT SIDE                           │
@@ -169,41 +169,41 @@ Compile / Execute
 │       Display Output / Error / Status                │
 └──────────────────────────────────────────────────────┘
 
-##🛠️ Technologies Used
+## 🛠️ Technologies Used
 
-####Frontend
-1. HTML5
-2. CSS3
-3. JavaScript
-4. Code editor UI
-5. Fetch API
+### Frontend
+- HTML5
+- CSS3
+- JavaScript
+- Code editor UI
+- Fetch API
 
-####Backend
-1. Python
-2. REST API
-3. Backend web framework
-4. Subprocess / process execution
-5. JSON-based request and response handling
+### Backend
+- Python
+- REST API
+- Backend web framework
+- Subprocess / process execution
+- JSON-based request and response handling
 
 
-###Programming Languages Supported
+### Programming Languages Supported
 
 The project is designed to execute multiple programming languages, including:
 
-Python
-C++
-Java
+- Python
+- C++
+- Java
 
-###DevOps & Deployment
+### DevOps & Deployment
 
-Docker
-Docker Compose
-Git
-GitHub
-Render
-Vercel
+- Docker
+- Docker Compose
+- Git
+- GitHub
+- Render
+- Vercel
 
-##📂 Project Structure
+## 📂 Project Structure
 
 code-editor/
 │
@@ -230,7 +230,7 @@ code-editor/
 └── README.md
 
 
-##🌐 Deployment Architecture
+## 🌐 Deployment Architecture
 
                   Internet
                      │
@@ -253,7 +253,7 @@ code-editor/
           │ Environment        │
           └────────────────────┘
 
-##📊 Performance Considerations
+## 📊 Performance Considerations
 
 Code execution performance depends on several factors:
 
@@ -267,25 +267,25 @@ Network latency
 Backend implementation
 
 
-##📈 Future Enhancements
+## 📈 Future Enhancements
 
 The project can be extended with:
 
-###👤 User Authentication
+### 👤 User Authentication
 User registration
 Login
 JWT authentication
 User profiles
 
-###💾 Code Saving
+### 💾 Code Saving
 
 Allow users to save programs.
 
-###📚 Code History
+### 📚 Code History
 
 Store previous submissions and execution results.
 
-###🎨 Advanced Code Editor
+### 🎨 Advanced Code Editor
 
 Integrate a professional editor such as Monaco Editor.
 Potential features:
@@ -297,7 +297,7 @@ IntelliSense
 Line numbers
 Multiple files
 
-###📊 Execution Metrics
+### 📊 Execution Metrics
 
 Display:
 Execution time
@@ -305,7 +305,7 @@ Memory usage
 CPU usage
 Exit code
 
-##🎯 Learning Outcomes
+## 🎯 Learning Outcomes
 
 This project demonstrates practical knowledge of:
 
@@ -324,7 +324,7 @@ Error handling
 Application architecture
 Basic DevOps practices
 
-##👨‍💻 Author
+## 👨‍💻 Author
 
 Saaeesh Pednekar
 Computer Science & Engineering
@@ -334,7 +334,7 @@ Software Development
 Backend Development
 Cloud & DevOps
 
-##⭐ Acknowledgements
+## ⭐ Acknowledgements
 
 This project was developed as a practical full-stack project to understand:
 
