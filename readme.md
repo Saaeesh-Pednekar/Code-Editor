@@ -206,7 +206,7 @@ The project is designed to execute multiple programming languages, including:
 - Vercel
 
 ## 📂 Project Structure
-
+```text
 code-editor/
 │
 ├── frontend/
@@ -230,7 +230,7 @@ code-editor/
 ├── .gitignore
 │
 └── README.md
-
+```
 
 ## 🌐 Deployment Architecture
 
