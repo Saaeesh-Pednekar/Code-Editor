@@ -1,5 +1,7 @@
 # 💻 Online Code Editor & Code Execution Platform
 
+![Code Editor](static/readme_img/image.png)
+
 A full-stack online code editor that allows users to write, execute, and test programs directly from a web browser.
 
 The platform provides a browser-based coding environment with support for multiple programming languages and communicates with a backend execution service through REST APIs. The backend is containerized using Docker, making the application easy to run consistently across development and deployment environments.
